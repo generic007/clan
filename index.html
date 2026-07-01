@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>Clan — Family Care Hub</title>
+  <meta name="description" content="Private family care coordination. No accounts, no cloud, no complexity.">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 18px; } /* Large base for seniors */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      line-height: 1.5;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+    body.dark {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    /* ===== SENIOR-FRIENDLY DEFAULTS ===== */
+    button, input, select, textarea {
+      font-size: inherit;
+      font-family: inherit;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-weight: 600;
+      transition: all 0.2s;
+      touch-action: manipulation;
+    }
+    button:active { transform: scale(0.97); }
+    button:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+    input, select, textarea {
+      background: #fff;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 12px 16px;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+    body.dark input, body.dark select, body.dark textarea {
+      background: #1e293b;
+      border-color: #475569;
+      color: #e2e8f0;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #2563eb;
+      outline: none;
+    }
+
+    /* ===== LAYOUT ===== */
+    #app {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 16px;
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0 16px;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 16px;
+    }
+    body.dark header { border-color: #334155; }
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #2563eb;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo small { font-weight: 400; color: #64748b; font-size: 0.7rem; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .header-btn {
+      background: none;
+      padding: 8px;
+      font-size: 1.2rem;
+      color: #64748b;
+      border-radius: 8px;
+    }
+    .header-btn:hover { background: #e2e8f0; }
+    body.dark .header-btn:hover { background: #334155; }
+
+    /* ===== NAV TABS ===== */
+    nav.tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      padding: 10px 8px;
+      font-size: 0.85rem;
+      border-radius: 10px;
+      background: #e2e8f0;
+      color: #64748b;
+      text-align: center;
+      font-weight: 600;
+    }
+    body.dark .tab-btn { background: #1e293b; color: #94a3b8; }
+    .tab-btn.active {
+      background: #2563eb;
+      color: #fff;
+    }
+    body.dark .tab-btn.active { background: #3b82f6; }
+
+    /* ===== PANELS ===== */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ===== DASHBOARD ===== */
+    .date-header {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #334155;
+    }
+    body.dark .date-header { color: #cbd5e1; }
+
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin: 16px 0 8px;
+    }
+
+    .med-card, .appt-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    body.dark .med-card, body.dark .appt-card {
+      background: #1e293b;
+    }
+    .med-card.completed { opacity: 0.6; }
+    .med-card.completed .med-name { text-decoration: line-through; }
+
+    .med-indicator {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      background: #dbeafe;
+      color: #2563eb;
+    }
+    body.dark .med-indicator { background: #1e3a5f; color: #60a5fa; }
+    .med-info { flex: 1; }
+    .med-name { font-weight: 700; font-size: 1rem; }
+    .med-detail { font-size: 0.8rem; color: #64748b; }
+    .med-dose-btn {
+      background: #2563eb;
+      color: #fff;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+    .med-dose-btn.taken { background: #16a34a; }
+    .med-dose-btn.skipped { background: #dc2626; }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: #94a3b8;
+    }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 8px; }
+    .empty-state p { font-size: 0.9rem; }
+
+    /* ===== MEDICATION MANAGER ===== */
+    .med-list-item {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    body.dark .med-list-item { background: #1e293b; }
+    .med-list-item.inactive { opacity: 0.5; }
+    .med-list-info { flex: 1; }
+    .med-list-name { font-weight: 700; }
+    .med-list-schedule { font-size: 0.8rem; color: #64748b; }
+    .med-list-actions { display: flex; gap: 6px; }
+    .icon-btn {
+      background: none;
+      padding: 6px;
+      font-size: 1.1rem;
+      border-radius: 6px;
+    }
+    .icon-btn:hover { background: #e2e8f0; }
+    body.dark .icon-btn:hover { background: #334155; }
+
+    /* ===== FORM ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      padding: 24px;
+      width: 100%;
+      max-width: 800px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    body.dark .modal {
+      background: #1e293b;
+    }
+    .modal h2 { font-size: 1.2rem; margin-bottom: 16px; }
+    .modal .form-group { margin-bottom: 14px; }
+    .modal label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      color: #475569;
+    }
+    body.dark .modal label { color: #94a3b8; }
+    .modal .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .modal-actions .btn-primary { flex: 1; }
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+      padding: 14px;
+      font-size: 1rem;
+      border-radius: 12px;
+    }
+    body.dark .btn-primary { background: #3b82f6; }
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #475569;
+      padding: 14px;
+      font-size: 1rem;
+      border-radius: 12px;
+    }
+    body.dark .btn-secondary { background: #334155; color: #94a3b8; }
+    .btn-danger {
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 14px;
+      font-size: 1rem;
+      border-radius: 12px;
+    }
+    body.dark .btn-danger { background: #451a1a; color: #fca5a5; }
+
+    /* ===== APPOINTMENTS ===== */
+    .appt-list-item {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    body.dark .appt-list-item { background: #1e293b; }
+    .appt-list-title { font-weight: 700; font-size: 1rem; }
+    .appt-list-date { font-size: 0.85rem; color: #2563eb; font-weight: 600; }
+    .appt-list-detail { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+
+    /* ===== CARE LOG ===== */
+    .log-entry {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    body.dark .log-entry { background: #1e293b; }
+    .log-date { font-weight: 700; font-size: 0.9rem; color: #2563eb; }
+    .log-mood { font-size: 1.3rem; margin-right: 8px; }
+    .log-notes { font-size: 0.85rem; margin-top: 4px; color: #475569; }
+    body.dark .log-notes { color: #94a3b8; }
+
+    .mood-selector {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 8px 0;
+    }
+    .mood-btn {
+      font-size: 1.8rem;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: #f1f5f9;
+    }
+    body.dark .mood-btn { background: #334155; }
+    .mood-btn.selected { background: #dbeafe; outline: 3px solid #2563eb; }
+    body.dark .mood-btn.selected { background: #1e3a5f; }
+
+    /* ===== SETTINGS ===== */
+    .setting-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    body.dark .setting-item { border-color: #334155; }
+    .setting-label { font-weight: 600; }
+    .setting-desc { font-size: 0.8rem; color: #64748b; }
+
+    /* ===== TOGGLE ===== */
+    .toggle {
+      width: 50px; height: 28px;
+      background: #cbd5e1;
+      border-radius: 14px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    body.dark .toggle { background: #475569; }
+    .toggle.on { background: #2563eb; }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 22px; height: 22px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .toggle.on::after { transform: translateX(22px); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (min-width: 600px) {
+      html { font-size: 20px; }
+      #app { padding: 24px; }
+      .modal { border-radius: 20px; margin-bottom: 40px; }
+      .modal-overlay { align-items: center; }
+      .mood-btn { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header>
+      <div class="logo">
+        🌿 Clan
+        <small>care hub</small>
+      </div>
+      <div class="header-actions">
+        <button class="header-btn" onclick="toggleTheme()" title="Dark mode">🌙</button>
+        <button class="header-btn" onclick="exportData()" title="Export">⬇️</button>
+      </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">📋 Today</button>
+      <button class="tab-btn" data-tab="meds" onclick="switchTab('meds')">💊 Meds</button>
+      <button class="tab-btn" data-tab="appointments" onclick="switchTab('appointments')">📅 Visits</button>
+      <button class="tab-btn" data-tab="log" onclick="switchTab('log')">📝 Log</button>
+    </nav>
+
+    <!-- Dashboard Panel -->
+    <div id="panel-dashboard" class="panel active">
+      <div class="date-header" id="today-date"></div>
+      <div class="section-title">💊 Today's Medications</div>
+      <div id="today-meds"></div>
+      <div class="section-title">📅 Today's Appointments</div>
+      <div id="today-appts"></div>
+      <div class="section-title">📝 Quick Log</div>
+      <div id="quick-log-area"></div>
+    </div>
+
+    <!-- Meds Panel -->
+    <div id="panel-meds" class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="font-size:1.1rem;">Medications</h2>
+        <button class="btn-primary" style="padding:8px 16px;font-size:0.85rem;" onclick="openMedForm()">+ Add Med</button>
+      </div>
+      <div id="med-list"></div>
+    </div>
+
+    <!-- Appointments Panel -->
+    <div id="panel-appointments" class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="font-size:1.1rem;">Appointments</h2>
+        <button class="btn-primary" style="padding:8px 16px;font-size:0.85rem;" onclick="openApptForm()">+ Add Visit</button>
+      </div>
+      <div id="appt-list"></div>
+    </div>
+
+    <!-- Log Panel -->
+    <div id="panel-log" class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="font-size:1.1rem;">Care Log</h2>
+        <button class="btn-primary" style="padding:8px 16px;font-size:0.85rem;" onclick="openLogForm()">+ Add Entry</button>
+      </div>
+      <div id="log-list"></div>
+    </div>
+  </div>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" id="modal-content"></div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
